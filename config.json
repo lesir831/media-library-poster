@@ -1,0 +1,51 @@
+{
+  "jellyfin": {
+    "base_url": "http://192.168.2.211:8096",
+    "user_name": "username",
+    "password": "password",
+    "update_poster": false
+  },
+  "exclude_Update_library": ["Short", "Playlists", "合集"],
+  "template_mapping": [
+    {
+      "library_name": "Anime",
+      "library_ch_name": "动漫",
+      "library_eng_name": "ANIME"
+    },
+    {
+      "library_name": "Classic TV",
+      "library_ch_name": "电视剧",
+      "library_eng_name": "TV"
+    },
+    {
+      "library_name": "Movie",
+      "library_ch_name": "电影",
+      "library_eng_name": "MOVIE"
+    },
+    {
+      "library_name": "Documentary",
+      "library_ch_name": "纪录片",
+      "library_eng_name": "DOC"
+    },
+    {
+      "library_name": "合集",
+      "library_ch_name": "合集",
+      "library_eng_name": "COLLECTIONS"
+    },
+    {
+      "library_name": "Hot Movie",
+      "library_ch_name": "正在热映",
+      "library_eng_name": "HOT MOVIE"
+    },
+    {
+      "library_name": "Hot TV",
+      "library_ch_name": "正在热播",
+      "library_eng_name": "HOT TV"
+    },
+    {
+      "library_name": "Short",
+      "library_ch_name": "短剧",
+      "library_eng_name": "SHORT"
+    }
+  ]
+}
