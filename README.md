@@ -52,3 +52,9 @@ python main.py
 
 1. 请确保 `base_url`、`user_name` 和 `password` 配置正确
 2. `exclude_Update_library` 中列出的媒体库将不会被自动更新海报
+
+## 效果图
+
+![](./screenshot/2.png)
+
+![](./screenshot/1.png)
