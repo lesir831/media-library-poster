@@ -25,20 +25,27 @@ POSTER_FOLDER = os.path.join(CURRENT_DIR, "poster")  # 海报图片文件夹
 TEMPLATE_FOLDER = os.path.join(CURRENT_DIR, "template")  # 模板图片
 OUTPUT_FOLDER = os.path.join(CURRENT_DIR, "output")  # 输出文件夹
 
-# Jellyfin 配置
-JELLYFIN_CONFIG = {
-    "BASE_URL": JSON_CONFIG["jellyfin"]["base_url"],  # 从JSON配置获取Jellyfin服务地址
-    "USER_NAME": JSON_CONFIG["jellyfin"]["user_name"],  # 用户名
-    "PASSWORD": JSON_CONFIG["jellyfin"]["password"],  # 密码
-    "AUTHORIZATION": 'MediaBrowser Client="other", Device="client", DeviceId="123", Version="0.0.0"',  # 是否需要认证
-    "ACCESS_TOKEN": "",  # API密钥
+# 服务器类型配置（jellyfin 或 emby）
+SERVER_TYPE = JSON_CONFIG.get("server_type", "jellyfin")
+
+# 服务器配置
+SERVER_CONFIG = {
+    "BASE_URL": JSON_CONFIG[SERVER_TYPE]["base_url"],  # 从JSON配置获取服务地址
+    "USER_NAME": JSON_CONFIG[SERVER_TYPE]["user_name"],  # 用户名
+    "PASSWORD": JSON_CONFIG[SERVER_TYPE]["password"],  # 密码
+    "AUTHORIZATION": 'MediaBrowser Client="other", Device="client", DeviceId="123", Version="0.0.0"',  # 认证头
+    "ACCESS_TOKEN": "",  # API令牌
     "USER_ID": "",  # 用户ID
     "IMAGE_TYPE": "Primary",  # 图片类型
     "IMAGE_PATH": "poster.png",  # 图片文件名
-    "UPDATE_POSTER": JSON_CONFIG["jellyfin"].get(
+    "UPDATE_POSTER": JSON_CONFIG[SERVER_TYPE].get(
         "update_poster", False
     ),  # 是否更新海报
+    "API_KEY": JSON_CONFIG[SERVER_TYPE].get("api_key", "") if SERVER_TYPE == "emby" else "",  # Emby API密钥（仅Emby使用）
 }
+
+# 兼容旧代码，保留JELLYFIN_CONFIG变量名
+JELLYFIN_CONFIG = SERVER_CONFIG
 
 EXCLUDE_LIBRARY = JSON_CONFIG["exclude_Update_library"]  # 排除更新的媒体库列表
 

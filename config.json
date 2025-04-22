@@ -1,9 +1,17 @@
 {
+  "server_type": "emby",
   "jellyfin": {
     "base_url": "http://192.168.2.211:8096",
     "user_name": "username",
     "password": "password",
     "update_poster": false
+  },
+  "emby": {
+    "base_url": "http://192.168.2.211:8096",
+    "user_name": "username",
+    "password": "password",
+    "update_poster": false,
+    "api_key": ""
   },
   "exclude_Update_library": ["Short", "Playlists", "合集"],
   "template_mapping": [

@@ -22,13 +22,13 @@ def ensure_poster_directory(poster_dir, name):
     return full_path
 
 
-def get_items(parent_id):
-    """获取媒体项列表"""
-    # 修改为获取用户的媒体库列表
-    url = f"{config.JELLYFIN_CONFIG['BASE_URL']}/Users/{config.JELLYFIN_CONFIG['USER_ID']}/Items/?ParentId={parent_id}"
+def get_jellyfin_items(parent_id):
+    """从Jellyfin获取媒体项列表"""
+    auth_info = config.get_auth_info()
+    url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items/?ParentId={parent_id}"
 
     headers = {
-        "Authorization": f'MediaBrowser Token="{config.JELLYFIN_CONFIG["ACCESS_TOKEN"]}"'
+        "Authorization": f'MediaBrowser Token="{auth_info["access_token"]}"'
     }
     try:
         print(f"正在从 Jellyfin 获取媒体列表...")
@@ -43,10 +43,55 @@ def get_items(parent_id):
                 print("未找到任何媒体项")
                 return []
         else:
-            print(f"获取媒体列表失败，状态码: {response.status_code}")
+            print(f"获取Jellyfin媒体列表失败，状态码: {response.status_code}")
             return []
     except Exception as e:
-        print(f"获取媒体列表时出错: {e}")
+        print(f"获取Jellyfin媒体列表时出错: {e}")
+        return []
+
+def get_emby_items(parent_id):
+    """从Emby获取媒体项列表"""
+    auth_info = config.get_auth_info()
+    
+    # Emby API可以使用API密钥或访问令牌
+    if auth_info.get("is_api_key", False):
+        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}&api_key={auth_info['access_token']}"
+        headers = {}
+    else:
+        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}"
+        headers = {
+            "Authorization": f'MediaBrowser Token="{auth_info["access_token"]}"'
+        }
+        
+    try:
+        print(f"正在从 Emby 获取媒体列表...")
+        response = requests.get(url, headers=headers, timeout=30)
+
+        if response.status_code == 200:
+            data = response.json()
+            if len(data) > 0:
+                print(f"成功获取到 {len(data)} 个媒体项")
+                return data.get("Items", [])
+            else:
+                print("未找到任何媒体项")
+                return []
+        else:
+            print(f"获取Emby媒体列表失败，状态码: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"获取Emby媒体列表时出错: {e}")
+        return []
+
+def get_items(parent_id):
+    """根据服务器类型获取媒体项列表"""
+    server_type = config.SERVER_TYPE
+    
+    if server_type == "jellyfin":
+        return get_jellyfin_items(parent_id)
+    elif server_type == "emby":
+        return get_emby_items(parent_id)
+    else:
+        print(f"不支持的服务器类型: {server_type}")
         return []
 
 
@@ -111,15 +156,16 @@ def sort_and_select_items(items, count=9):
     return selected_items
 
 
-def download_image(item_id, output_path, index):
-    """下载指定 ID 的媒体项的封面图片"""
-    url = f"{config.JELLYFIN_CONFIG['BASE_URL']}/Items/{item_id}/Images/{config.JELLYFIN_CONFIG['IMAGE_TYPE']}"
+def download_jellyfin_image(item_id, output_path, index):
+    """从Jellyfin下载指定 ID 的媒体项的封面图片"""
+    auth_info = config.get_auth_info()
+    url = f"{auth_info['base_url']}/Items/{item_id}/Images/{config.SERVER_CONFIG['IMAGE_TYPE']}"
 
     headers = {
-        "Authorization": f'MediaBrowser Token="{config.JELLYFIN_CONFIG["ACCESS_TOKEN"]}"'
+        "Authorization": f'MediaBrowser Token="{auth_info["access_token"]}"'
     }
     try:
-        # print(f"正在下载第 {index} 张图片: {url}")
+        # print(f"正在从Jellyfin下载第 {index} 张图片: {url}")
         response = requests.get(url, headers=headers, stream=True, timeout=30)
 
         if response.status_code == 200:
@@ -131,10 +177,55 @@ def download_image(item_id, output_path, index):
             # print(f"图片 {index} 已保存到: {output_path}")
             return True
         else:
-            print(f"下载图片 {index} 失败，状态码: {response.status_code}")
+            print(f"从Jellyfin下载图片 {index} 失败，状态码: {response.status_code}")
             return False
     except Exception as e:
-        print(f"下载图片 {index} 时出错: {e}")
+        print(f"从Jellyfin下载图片 {index} 时出错: {e}")
+        return False
+
+def download_emby_image(item_id, output_path, index):
+    """从Emby下载指定 ID 的媒体项的封面图片"""
+    auth_info = config.get_auth_info()
+    
+    # Emby API可以使用API密钥或访问令牌
+    if auth_info.get("is_api_key", False):
+        url = f"{auth_info['base_url']}/Items/{item_id}/Images/{config.SERVER_CONFIG['IMAGE_TYPE']}?api_key={auth_info['access_token']}"
+        headers = {}
+    else:
+        url = f"{auth_info['base_url']}/Items/{item_id}/Images/{config.SERVER_CONFIG['IMAGE_TYPE']}"
+        headers = {
+            "Authorization": f'MediaBrowser Token="{auth_info["access_token"]}"'
+        }
+    
+    try:
+        # print(f"正在从Emby下载第 {index} 张图片: {url}")
+        response = requests.get(url, headers=headers, stream=True, timeout=30)
+
+        if response.status_code == 200:
+            # 保存图片
+            with open(output_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            # print(f"图片 {index} 已保存到: {output_path}")
+            return True
+        else:
+            print(f"从Emby下载图片 {index} 失败，状态码: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"从Emby下载图片 {index} 时出错: {e}")
+        return False
+
+def download_image(item_id, output_path, index):
+    """根据服务器类型下载指定 ID 的媒体项的封面图片"""
+    server_type = config.SERVER_TYPE
+    
+    if server_type == "jellyfin":
+        return download_jellyfin_image(item_id, output_path, index)
+    elif server_type == "emby":
+        return download_emby_image(item_id, output_path, index)
+    else:
+        print(f"不支持的服务器类型: {server_type}")
         return False
 
 
