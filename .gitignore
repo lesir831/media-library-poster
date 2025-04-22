@@ -178,3 +178,5 @@ output
 poster
 
 .DS_Store
+.vscode/
+.idea/

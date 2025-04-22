@@ -55,10 +55,10 @@ def get_emby_items(parent_id):
     
     # Emby API可以使用API密钥或访问令牌
     if auth_info.get("is_api_key", False):
-        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}&api_key={auth_info['access_token']}"
+        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}&api_key={auth_info['access_token']}&Recursive=true&SortBy=DateCreated,SortName,CommunityRating&SortOrder=Descending"
         headers = {}
     else:
-        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}"
+        url = f"{auth_info['base_url']}/Users/{auth_info['user_id']}/Items?ParentId={parent_id}&Recursive=true&SortBy=DateCreated,SortName,CommunityRating&SortOrder=Descending"
         headers = {
             "Authorization": f'MediaBrowser Token="{auth_info["access_token"]}"'
         }
